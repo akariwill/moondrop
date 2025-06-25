@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
     _id:{ type : String, required:true},
@@ -10,4 +10,4 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.user || mongoose.model('user', userSchema)
 
-export default User;
+export default User
