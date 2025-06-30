@@ -1,11 +1,11 @@
-import { addressDummyData } from "@/assets/assets";
 import { useAppContext } from "@/context/AppContext";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const OrderSummary = () => {
 
-  const { currency, router, getCartCount, getCartAmount, getToken, user, cartItems, setCardItems } = useAppContext()
+  const { currency, router, getCartCount, getCartAmount, getToken, user, cartItems, setCartItems } = useAppContext()
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -13,21 +13,20 @@ const OrderSummary = () => {
 
   const fetchUserAddresses = async () => {
     try {
-
-      const {token} = await getToken(request)
-      const {data} = await axios.get('/api/user/get-address', {headers:{Authorization: `Bearer ${token}`}})
+      const token = await getToken();
+      const { data } = await axios.get('/api/user/get-address', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (data.success) {
-        setUserAddresses(data.addresses)
-        if (data.addresses.length > 0) {
-          setSelectedAddress(data.addresses[0])
-        }
+        setUserAddresses(data.addresses);
       } else {
-        toast.error(data.message)
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-  }
+  };
+
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
@@ -35,7 +34,49 @@ const OrderSummary = () => {
   };
 
   const createOrder = async () => {
+    try {
 
+      if (!selectedAddress) {
+        return toast.error('Please select an address')
+      }
+
+      let cartItemsArray = Object.keys(cartItems).map((key) => ({
+  product: key,
+  quantity: cartItems[key]
+}));
+console.log("Cart Items to Submit:", cartItemsArray);
+
+      cartItemsArray = cartItemsArray.filter(item=>item.quantity>0)
+      
+      if (cartItemsArray.length === 0) {
+        return toast.error('Cart is empty')
+      }
+
+      const amount = getCartAmount() + Math.floor(getCartAmount() * 0.02); 
+      const token = await getToken();
+
+      const { data } = await axios.post('/api/order/create', {
+        address: selectedAddress._id,
+        items: cartItemsArray,
+        amount,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+
+      if (data.success) {
+        toast.success(data.message);
+        setCartItems({});
+        router.push('/order-placed');
+      } else {
+        console.log("❌ Order failed:", data);
+        toast.error(data.message);
+      }
+
+      
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   useEffect(() => {
@@ -94,7 +135,7 @@ const OrderSummary = () => {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <label className="text-base font-medium uppercase text-gray-600 block mb-2">
             Promo Code
           </label>
@@ -108,7 +149,7 @@ const OrderSummary = () => {
               Apply
             </button>
           </div>
-        </div>
+        </div> */}
 
         <hr className="border-gray-500/30 my-5" />
 

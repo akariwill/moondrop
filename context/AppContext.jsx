@@ -1,5 +1,4 @@
 'use client'
-import { productsDummyData, userDummyData } from "@/assets/assets";
 import { useAuth, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -119,19 +118,23 @@ export const AppContextProvider = (props) => {
     }
 
     const getCartAmount = () => {
-        let totalAmount = 0;
-        for (const items in cartItems) {
-            let itemInfo = products.find((product) => product._id === items);
-            if (cartItems[items] > 0) {
-                totalAmount += itemInfo.offerPrice * cartItems[items];
-            }
+    let totalAmount = 0;
+    for (const itemId in cartItems) {
+        const itemInfo = products.find((product) => product._id === itemId);
+        if (itemInfo && cartItems[itemId] > 0) {
+        totalAmount += (itemInfo.offerPrice || 0) * cartItems[itemId];
         }
-        return Math.floor(totalAmount * 100) / 100;
     }
+    return Math.floor(totalAmount * 100) / 100;
+    };
+
 
     useEffect(() => {
-        fetchProductData()
-    }, [])
+        if (user) {
+            
+            fetchProductData()
+        }
+    }, [user])
 
     useEffect(() => {
         if(user){
