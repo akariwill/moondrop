@@ -10,7 +10,7 @@
 
 # MOONDROP 
 <p align="center">
- <img src="" alt="main" width="100%">
+ <img src="https://github.com/akariwill/moondrop/blob/main/assets/moondrop_overview.png" alt="main" width="100%">
 </p>
 
 <p align="center">
